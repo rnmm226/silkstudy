@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Auto commit & push on session end",
+      "trigger": "Stop",
+      "description": "At the end of every Kiro session, stage all uncommitted changes, commit and push to origin.",
+      "action": {
+        "type": "command",
+        "command": "cd \"C:\\Users\\rnmdr\\OneDrive\\Documents\\SilkStudy\" && git add -A && git diff --cached --quiet || (git commit -m \"chore: auto-commit session changes\" && git push)"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Auto commit & push after task",
+      "trigger": "PostTaskExec",
+      "description": "After each spec task completes, stage all changes, commit with a message, and push to origin.",
+      "action": {
+        "type": "command",
+        "command": "cd \"C:\\Users\\rnmdr\\OneDrive\\Documents\\SilkStudy\" && git add -A && git diff --cached --quiet || git commit -m \"feat: auto-commit after task completion\" && git push"
+      }
+    }
+  ]
+}
