@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADVISOR
+  ADMIN
+}
+
+enum BudgetPeriod {
+  MONTHLY
+  YEARLY
+  TOTAL
+}
+
+enum BudgetScope {
+  TUITION_ONLY
+  LIVING_ONLY
+  TOTAL_COST
+  OTHER
+}
+
+enum OpportunityType {
+  PROGRAM
+  SCHOLARSHIP
+  OTHER
+}
+
+enum OpportunityStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CoverageType {
+  FULL
+  PARTIAL
+  NONE
+  UNKNOWN
+}
+
+enum CoverageScope {
+  FULL
+  PARTIAL
+  UNKNOWN
+}
+
+enum DeadlineType {
+  APPLICATION
+  SCHOLARSHIP
+  DOCUMENT
+  INTERVIEW
+  OTHER
+}
+
+enum EligibilityResult {
+  ELIGIBLE
+  INELIGIBLE
+  UNKNOWN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  role         UserRole
+  passwordHash String?  @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  students Student[]
+
+  @@map("users")
+}
+
+model Student {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  firstName      String    @map("first_name")
+  lastName       String    @map("last_name")
+  dateOfBirth    DateTime? @map("date_of_birth")
+  nationality    String
+  currentCountry String    @map("current_country")
+  phone          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("students")
+}
+
+model AcademicRecord {
+  id               String    @id @default(uuid())
+  studentId        String    @map("student_id")
+  institutionName  String    @map("institution_name")
+  degreeLevel      String    @map("degree_level")
+  fieldOfStudy     String    @map("field_of_study")
+  gradeValue       Float?    @map("grade_value")
+  gradeScale       Float?    @map("grade_scale")
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@map("academic_records")
+}
+
+model StudentPreference {
+  id                 String   @id @default(uuid())
+  studentId          String   @map("student_id")
+  targetDegreeLevel  String?  @map("target_degree_level")
+  fieldsOfInterest   String[] @map("fields_of_interest")
+  preferredCountries String[] @map("preferred_countries")
+  preferredLanguages String[] @map("preferred_languages")
+  studyModes         String[] @map("study_modes")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("student_preferences")
+}
+
+model StudentBudget {
+  id        String       @id @default(uuid())
+  studentId String       @map("student_id")
+  amount    Decimal
+  currency  String
+  period    BudgetPeriod
+  scope     BudgetScope
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@map("student_budgets")
+}
+
+model University {
+  id              String   @id @default(uuid())
+  nameI18n        String   @map("name_i18n")
+  country         String
+  city            String?
+  websiteUrl      String?  @map("website_url")
+  descriptionI18n String?  @map("description_i18n")
+  status          String   @default("DRAFT")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("universities")
+}
+
+model Opportunity {
+  id              String            @id @default(uuid())
+  type            OpportunityType
+  universityId    String?           @map("university_id")
+  nameI18n        String            @map("name_i18n")
+  descriptionI18n String?           @map("description_i18n")
+  status          OpportunityStatus @default(DRAFT)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@map("opportunities")
+}
+
+model ProgramDetail {
+  id                     String   @id @default(uuid())
+  opportunityId          String   @unique @map("opportunity_id")
+  degreeLevel            String   @map("degree_level")
+  fieldOfStudy           String   @map("field_of_study")
+  languagesOfInstruction String[] @map("languages_of_instruction")
+  durationMonths         Int?     @map("duration_months")
+  studyMode              String?  @map("study_mode")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@map("program_details")
+}
+
+model ScholarshipDetail {
+  id                          String         @id @default(uuid())
+  opportunityId               String         @unique @map("opportunity_id")
+  tuitionCoverageType         CoverageType   @map("tuition_coverage_type")
+  livingCoverageType          CoverageType   @map("living_coverage_type")
+  accommodationCoverageType   CoverageType   @map("accommodation_coverage_type")
+  transportCoverageType       CoverageType   @map("transport_coverage_type")
+  insuranceCoverageType       CoverageType   @map("insurance_coverage_type")
+  visaCoverageType            CoverageType   @map("visa_coverage_type")
+  applicationFeeCoverageType  CoverageType   @map("application_fee_coverage_type")
+  monthlyStipendAmount        Decimal?       @map("monthly_stipend_amount")
+  monthlyStipendCurrency      String?        @map("monthly_stipend_currency")
+  oneTimeFundingAmount        Decimal?       @map("one_time_funding_amount")
+  oneTimeFundingCurrency      String?        @map("one_time_funding_currency")
+  coverageScope               CoverageScope  @map("coverage_scope")
+  fundingBody                 String?        @map("funding_body")
+  renewable                  Boolean?
+  createdAt                   DateTime       @default(now()) @map("created_at")
+  updatedAt                   DateTime       @updatedAt @map("updated_at")
+
+  @@map("scholarship_details")
+}
+
+model ApplicationCycle {
+  id           String    @id @default(uuid())
+  opportunityId String    @map("opportunity_id")
+  name         String
+  academicYear String?   @map("academic_year")
+  term         String?
+  opensAt      DateTime? @map("opens_at")
+  closesAt     DateTime? @map("closes_at")
+  status       String    @default("DRAFT")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("application_cycles")
+}
+
+model Deadline {
+  id                 String        @id @default(uuid())
+  applicationCycleId String        @map("application_cycle_id")
+  type               DeadlineType
+  dueAt              DateTime      @map("due_at")
+  timezone           String
+  sourceId           String?       @map("source_id")
+  verificationStatus String        @map("verification_status")
+  verifiedAt         DateTime?     @map("verified_at")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  @@map("deadlines")
+}
+
+model Source {
+  id                String    @id @default(uuid())
+  url               String
+  title             String?
+  publisher         String?
+  sourceType        String?   @map("source_type")
+  verificationStatus String    @map("verification_status")
+  verifiedAt        DateTime? @map("verified_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("sources")
+}
+
+model FactSource {
+  id        String   @id @default(uuid())
+  sourceId  String   @map("source_id")
+  entityType String   @map("entity_type")
+  entityId  String   @map("entity_id")
+  factKey   String   @map("fact_key")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("fact_sources")
+}
+
+model EligibilityRule {
+  id              String   @id @default(uuid())
+  opportunityId   String   @map("opportunity_id")
+  activeVersionId String?  @map("active_version_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("eligibility_rules")
+}
+
+model EligibilityRuleVersion {
+  id                String    @id @default(uuid())
+  eligibilityRuleId String    @map("eligibility_rule_id")
+  versionNumber     Int       @map("version_number")
+  schemaVersion     String    @map("schema_version")
+  conditions        Json
+  sourceId          String?   @map("source_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  publishedAt       DateTime? @map("published_at")
+
+  @@map("eligibility_rule_versions")
+}
+
+model EligibilityEvaluation {
+  id                       String            @id @default(uuid())
+  studentId                String            @map("student_id")
+  eligibilityRuleVersionId String            @map("eligibility_rule_version_id")
+  result                   EligibilityResult
+  reasons                  Json
+  profileSnapshotHash      String?           @map("profile_snapshot_hash")
+  evaluatedAt              DateTime          @default(now()) @map("evaluated_at")
+
+  @@map("eligibility_evaluations")
+}
+
+model FitScore {
+  id                       String   @id @default(uuid())
+  studentId                String   @map("student_id")
+  opportunityId            String   @map("opportunity_id")
+  eligibilityEvaluationId  String   @map("eligibility_evaluation_id")
+  totalScore               Float    @map("total_score")
+  components               Json
+  computedAt               DateTime @default(now()) @map("computed_at")
+
+  @@map("fit_scores")
+}
+
+model MatchResult {
+  id                       String   @id @default(uuid())
+  studentId                String   @map("student_id")
+  opportunityId            String   @map("opportunity_id")
+  eligibilityEvaluationId  String   @map("eligibility_evaluation_id")
+  fitScoreId               String   @map("fit_score_id")
+  rank                     Int
+  reasons                  Json
+  generatedAt              DateTime @default(now()) @map("generated_at")
+
+  @@map("match_results")
+}
+
+model MatchExplanation {
+  id           String   @id @default(uuid())
+  matchResultId String   @map("match_result_id")
+  factor       String
+  result       String
+  contribution Int
+  sortOrder    Int      @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("match_explanations")
+}
+
+model Application {
+  id                 String   @id @default(uuid())
+  studentId          String   @map("student_id")
+  opportunityId      String   @map("opportunity_id")
+  applicationCycleId String   @map("application_cycle_id")
+  status             String   @default("DRAFT")
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@unique([studentId, opportunityId, applicationCycleId], name: "application_unique_cycle")
+  @@map("applications")
+}
+
+model Document {
+  id               String    @id @default(uuid())
+  studentId        String    @map("student_id")
+  applicationId    String?   @map("application_id")
+  documentType     String    @map("document_type")
+  storageKey       String    @map("storage_key")
+  originalFileName String    @map("original_filename")
+  mimeType         String    @map("mime_type")
+  sizeBytes        Int       @map("size_bytes")
+  scanStatus       String    @default("PENDING") @map("scan_status")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  @@map("documents")
+}
+
+model Notification {
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  type                String
+  relatedDeadlineId   String?   @map("related_deadline_id")
+  relatedApplicationId String?  @map("related_application_id")
+  channel             String
+  status              String
+  scheduledFor        DateTime? @map("scheduled_for")
+  sentAt              DateTime? @map("sent_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model HelpRequest {
+  id        String    @id @default(uuid())
+  studentId String    @map("student_id")
+  advisorId String?   @map("advisor_id")
+  category  String
+  status    String    @default("OPEN")
+  subject   String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  resolvedAt DateTime? @map("resolved_at")
+
+  @@map("help_requests")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?  @map("actor_user_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  reason      String?
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("audit_log")
+}
