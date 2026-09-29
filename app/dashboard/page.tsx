@@ -59,7 +59,7 @@ export default async function DashboardPage() {
           Welcome back, {name} 👋
         </h1>
         <p className="mt-1 text-sm text-slate-500">
-          Here's where you stand — keep building your profile to unlock better matches.
+          Here&apos;s where you stand — keep building your profile to unlock better matches.
         </p>
       </div>
 

@@ -1,9 +1,12 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/src/modules/auth/auth.config';
 import Providers from '@/components/providers';
 import Nav from '@/components/nav';
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   title: { default: 'SilkStudy', template: '%s | SilkStudy' },
@@ -18,16 +21,8 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-screen bg-slate-50 font-sans">
+    <html lang="en" className={inter.className}>
+      <body className="min-h-screen bg-slate-50">
         <Providers session={session}>
           <Nav />
           {children}

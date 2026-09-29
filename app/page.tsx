@@ -70,7 +70,7 @@ export default async function HomePage() {
                   href="/auth/login"
                   className="rounded-lg bg-white px-8 py-3 text-sm font-semibold text-brand-800 shadow hover:bg-brand-50 transition-colors"
                 >
-                  Get started — it's free
+                  Get started — it&apos;s free
                 </Link>
                 <Link
                   href="/auth/login"
@@ -103,7 +103,7 @@ export default async function HomePage() {
       {/* ── Features grid ── */}
       <section className="mx-auto max-w-5xl px-6 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-slate-900">Everything you need, nothing you don't</h2>
+          <h2 className="text-3xl font-bold text-slate-900">Everything you need, nothing you don&apos;t</h2>
           <p className="mt-3 text-slate-500 max-w-xl mx-auto">
             Built for students who want clear answers, not vague recommendations.
           </p>

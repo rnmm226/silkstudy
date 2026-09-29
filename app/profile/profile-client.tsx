@@ -205,7 +205,7 @@ export default function ProfileClient({ student, academicRecords, preferences, b
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center max-w-sm">
           <p className="text-2xl mb-2">⚠️</p>
           <p className="font-semibold text-amber-900">No student profile found</p>
-          <p className="mt-1 text-sm text-amber-700">Your account isn't linked to a student profile yet.</p>
+          <p className="mt-1 text-sm text-amber-700">Your account isn&apos;t linked to a student profile yet.</p>
         </div>
       </div>
     );
