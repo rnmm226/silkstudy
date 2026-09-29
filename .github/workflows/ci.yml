@@ -8,9 +8,22 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    env:
+      # Dummy values so Prisma client generation and Next.js build don't fail
+      # (no real DB connection needed for typecheck / lint / unit tests)
+      DATABASE_URL: postgresql://silkstudy:silkstudy@localhost:5432/silkstudy
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-secret-not-real
+      GOOGLE_CLIENT_ID: ci-placeholder
+      GOOGLE_CLIENT_SECRET: ci-placeholder
+
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Enable corepack (pnpm)
+        run: corepack enable
 
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
@@ -18,11 +31,11 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Enable pnpm
-        run: corepack enable
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
 
       - name: Typecheck
         run: pnpm typecheck
