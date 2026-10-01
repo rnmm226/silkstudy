@@ -65,6 +65,8 @@ enum EligibilityResult {
   UNKNOWN
 }
 
+// ─── Users & Students ─────────────────────────────────────────────────────────
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -73,7 +75,8 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  students Student[]
+  students      Student[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -91,23 +94,34 @@ model Student {
   updatedAt      DateTime  @updatedAt @map("updated_at")
   deletedAt      DateTime? @map("deleted_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user                   User                    @relation(fields: [userId], references: [id])
+  academicRecords        AcademicRecord[]
+  preferences            StudentPreference[]
+  budgets                StudentBudget[]
+  eligibilityEvaluations EligibilityEvaluation[]
+  fitScores              FitScore[]
+  matchResults           MatchResult[]
+  applications           Application[]
+  documents              Document[]
+  helpRequests           HelpRequest[]
 
   @@map("students")
 }
 
 model AcademicRecord {
-  id               String    @id @default(uuid())
-  studentId        String    @map("student_id")
-  institutionName  String    @map("institution_name")
-  degreeLevel      String    @map("degree_level")
-  fieldOfStudy     String    @map("field_of_study")
-  gradeValue       Float?    @map("grade_value")
-  gradeScale       Float?    @map("grade_scale")
-  startDate        DateTime? @map("start_date")
-  endDate          DateTime? @map("end_date")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  studentId       String    @map("student_id")
+  institutionName String    @map("institution_name")
+  degreeLevel     String    @map("degree_level")
+  fieldOfStudy    String    @map("field_of_study")
+  gradeValue      Float?    @map("grade_value")
+  gradeScale      Float?    @map("grade_scale")
+  startDate       DateTime? @map("start_date")
+  endDate         DateTime? @map("end_date")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  student Student @relation(fields: [studentId], references: [id])
 
   @@map("academic_records")
 }
@@ -123,6 +137,8 @@ model StudentPreference {
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
+  student Student @relation(fields: [studentId], references: [id])
+
   @@map("student_preferences")
 }
 
@@ -136,8 +152,12 @@ model StudentBudget {
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
 
+  student Student @relation(fields: [studentId], references: [id])
+
   @@map("student_budgets")
 }
+
+// ─── Catalog ──────────────────────────────────────────────────────────────────
 
 model University {
   id              String   @id @default(uuid())
@@ -149,6 +169,8 @@ model University {
   status          String   @default("DRAFT")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+
+  opportunities Opportunity[]
 
   @@map("universities")
 }
@@ -162,6 +184,15 @@ model Opportunity {
   status          OpportunityStatus @default(DRAFT)
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  university         University?        @relation(fields: [universityId], references: [id])
+  programDetail      ProgramDetail?
+  scholarshipDetail  ScholarshipDetail?
+  applicationCycles  ApplicationCycle[]
+  eligibilityRules   EligibilityRule[]
+  fitScores          FitScore[]
+  matchResults       MatchResult[]
+  applications       Application[]
 
   @@map("opportunities")
 }
@@ -177,86 +208,107 @@ model ProgramDetail {
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
 
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id])
+
   @@map("program_details")
 }
 
 model ScholarshipDetail {
-  id                          String         @id @default(uuid())
-  opportunityId               String         @unique @map("opportunity_id")
-  tuitionCoverageType         CoverageType   @map("tuition_coverage_type")
-  livingCoverageType          CoverageType   @map("living_coverage_type")
-  accommodationCoverageType   CoverageType   @map("accommodation_coverage_type")
-  transportCoverageType       CoverageType   @map("transport_coverage_type")
-  insuranceCoverageType       CoverageType   @map("insurance_coverage_type")
-  visaCoverageType            CoverageType   @map("visa_coverage_type")
-  applicationFeeCoverageType  CoverageType   @map("application_fee_coverage_type")
-  monthlyStipendAmount        Decimal?       @map("monthly_stipend_amount")
-  monthlyStipendCurrency      String?        @map("monthly_stipend_currency")
-  oneTimeFundingAmount        Decimal?       @map("one_time_funding_amount")
-  oneTimeFundingCurrency      String?        @map("one_time_funding_currency")
-  coverageScope               CoverageScope  @map("coverage_scope")
-  fundingBody                 String?        @map("funding_body")
+  id                         String        @id @default(uuid())
+  opportunityId              String        @unique @map("opportunity_id")
+  tuitionCoverageType        CoverageType  @map("tuition_coverage_type")
+  livingCoverageType         CoverageType  @map("living_coverage_type")
+  accommodationCoverageType  CoverageType  @map("accommodation_coverage_type")
+  transportCoverageType      CoverageType  @map("transport_coverage_type")
+  insuranceCoverageType      CoverageType  @map("insurance_coverage_type")
+  visaCoverageType           CoverageType  @map("visa_coverage_type")
+  applicationFeeCoverageType CoverageType  @map("application_fee_coverage_type")
+  monthlyStipendAmount       Decimal?      @map("monthly_stipend_amount")
+  monthlyStipendCurrency     String?       @map("monthly_stipend_currency")
+  oneTimeFundingAmount       Decimal?      @map("one_time_funding_amount")
+  oneTimeFundingCurrency     String?       @map("one_time_funding_currency")
+  coverageScope              CoverageScope @map("coverage_scope")
+  fundingBody                String?       @map("funding_body")
   renewable                  Boolean?
-  createdAt                   DateTime       @default(now()) @map("created_at")
-  updatedAt                   DateTime       @updatedAt @map("updated_at")
+  createdAt                  DateTime      @default(now()) @map("created_at")
+  updatedAt                  DateTime      @updatedAt @map("updated_at")
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id])
 
   @@map("scholarship_details")
 }
 
 model ApplicationCycle {
-  id           String    @id @default(uuid())
+  id            String    @id @default(uuid())
   opportunityId String    @map("opportunity_id")
-  name         String
-  academicYear String?   @map("academic_year")
-  term         String?
-  opensAt      DateTime? @map("opens_at")
-  closesAt     DateTime? @map("closes_at")
-  status       String    @default("DRAFT")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  name          String
+  academicYear  String?   @map("academic_year")
+  term          String?
+  opensAt       DateTime? @map("opens_at")
+  closesAt      DateTime? @map("closes_at")
+  status        String    @default("DRAFT")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  opportunity  Opportunity   @relation(fields: [opportunityId], references: [id])
+  deadlines    Deadline[]
+  applications Application[]
 
   @@map("application_cycles")
 }
 
 model Deadline {
-  id                 String        @id @default(uuid())
-  applicationCycleId String        @map("application_cycle_id")
+  id                 String       @id @default(uuid())
+  applicationCycleId String       @map("application_cycle_id")
   type               DeadlineType
-  dueAt              DateTime      @map("due_at")
+  dueAt              DateTime     @map("due_at")
   timezone           String
-  sourceId           String?       @map("source_id")
-  verificationStatus String        @map("verification_status")
-  verifiedAt         DateTime?     @map("verified_at")
-  createdAt          DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+  sourceId           String?      @map("source_id")
+  verificationStatus String       @map("verification_status")
+  verifiedAt         DateTime?    @map("verified_at")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  applicationCycle ApplicationCycle @relation(fields: [applicationCycleId], references: [id])
+  source           Source?          @relation(fields: [sourceId], references: [id])
 
   @@map("deadlines")
 }
 
+// ─── Provenance ───────────────────────────────────────────────────────────────
+
 model Source {
-  id                String    @id @default(uuid())
-  url               String
-  title             String?
-  publisher         String?
-  sourceType        String?   @map("source_type")
+  id                 String    @id @default(uuid())
+  url                String
+  title              String?
+  publisher          String?
+  sourceType         String?   @map("source_type")
   verificationStatus String    @map("verification_status")
-  verifiedAt        DateTime? @map("verified_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  verifiedAt         DateTime? @map("verified_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  deadlines              Deadline[]
+  eligibilityRuleVersions EligibilityRuleVersion[]
+  factSources            FactSource[]
 
   @@map("sources")
 }
 
 model FactSource {
-  id        String   @id @default(uuid())
-  sourceId  String   @map("source_id")
+  id         String   @id @default(uuid())
+  sourceId   String   @map("source_id")
   entityType String   @map("entity_type")
-  entityId  String   @map("entity_id")
-  factKey   String   @map("fact_key")
-  createdAt DateTime @default(now()) @map("created_at")
+  entityId   String   @map("entity_id")
+  factKey    String   @map("fact_key")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  source Source @relation(fields: [sourceId], references: [id])
 
   @@map("fact_sources")
 }
+
+// ─── Eligibility ──────────────────────────────────────────────────────────────
 
 model EligibilityRule {
   id              String   @id @default(uuid())
@@ -264,6 +316,9 @@ model EligibilityRule {
   activeVersionId String?  @map("active_version_id")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+
+  opportunity Opportunity              @relation(fields: [opportunityId], references: [id])
+  versions    EligibilityRuleVersion[]
 
   @@map("eligibility_rules")
 }
@@ -278,6 +333,10 @@ model EligibilityRuleVersion {
   createdAt         DateTime  @default(now()) @map("created_at")
   publishedAt       DateTime? @map("published_at")
 
+  eligibilityRule        EligibilityRule         @relation(fields: [eligibilityRuleId], references: [id])
+  source                 Source?                 @relation(fields: [sourceId], references: [id])
+  eligibilityEvaluations EligibilityEvaluation[]
+
   @@map("eligibility_rule_versions")
 }
 
@@ -290,45 +349,67 @@ model EligibilityEvaluation {
   profileSnapshotHash      String?           @map("profile_snapshot_hash")
   evaluatedAt              DateTime          @default(now()) @map("evaluated_at")
 
+  student              Student                @relation(fields: [studentId], references: [id])
+  eligibilityRuleVersion EligibilityRuleVersion @relation(fields: [eligibilityRuleVersionId], references: [id])
+  fitScores            FitScore[]
+  matchResults         MatchResult[]
+
   @@map("eligibility_evaluations")
 }
 
+// ─── Matching ─────────────────────────────────────────────────────────────────
+
 model FitScore {
-  id                       String   @id @default(uuid())
-  studentId                String   @map("student_id")
-  opportunityId            String   @map("opportunity_id")
-  eligibilityEvaluationId  String   @map("eligibility_evaluation_id")
-  totalScore               Float    @map("total_score")
-  components               Json
-  computedAt               DateTime @default(now()) @map("computed_at")
+  id                      String   @id @default(uuid())
+  studentId               String   @map("student_id")
+  opportunityId           String   @map("opportunity_id")
+  eligibilityEvaluationId String   @map("eligibility_evaluation_id")
+  totalScore              Float    @map("total_score")
+  components              Json
+  computedAt              DateTime @default(now()) @map("computed_at")
+
+  student               Student               @relation(fields: [studentId], references: [id])
+  opportunity           Opportunity           @relation(fields: [opportunityId], references: [id])
+  eligibilityEvaluation EligibilityEvaluation @relation(fields: [eligibilityEvaluationId], references: [id])
+  matchResults          MatchResult[]
 
   @@map("fit_scores")
 }
 
 model MatchResult {
-  id                       String   @id @default(uuid())
-  studentId                String   @map("student_id")
-  opportunityId            String   @map("opportunity_id")
-  eligibilityEvaluationId  String   @map("eligibility_evaluation_id")
-  fitScoreId               String   @map("fit_score_id")
-  rank                     Int
-  reasons                  Json
-  generatedAt              DateTime @default(now()) @map("generated_at")
+  id                      String   @id @default(uuid())
+  studentId               String   @map("student_id")
+  opportunityId           String   @map("opportunity_id")
+  eligibilityEvaluationId String   @map("eligibility_evaluation_id")
+  fitScoreId              String   @map("fit_score_id")
+  rank                    Int
+  reasons                 Json
+  generatedAt             DateTime @default(now()) @map("generated_at")
+
+  student               Student               @relation(fields: [studentId], references: [id])
+  opportunity           Opportunity           @relation(fields: [opportunityId], references: [id])
+  eligibilityEvaluation EligibilityEvaluation @relation(fields: [eligibilityEvaluationId], references: [id])
+  fitScore              FitScore              @relation(fields: [fitScoreId], references: [id])
+  explanations          MatchExplanation[]
 
   @@map("match_results")
 }
 
 model MatchExplanation {
-  id           String   @id @default(uuid())
+  id            String   @id @default(uuid())
   matchResultId String   @map("match_result_id")
-  factor       String
-  result       String
-  contribution Int
-  sortOrder    Int      @map("sort_order")
-  createdAt    DateTime @default(now()) @map("created_at")
+  factor        String
+  result        String
+  contribution  Int
+  sortOrder     Int      @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  matchResult MatchResult @relation(fields: [matchResultId], references: [id])
 
   @@map("match_explanations")
 }
+
+// ─── Applications ─────────────────────────────────────────────────────────────
 
 model Application {
   id                 String   @id @default(uuid())
@@ -339,6 +420,11 @@ model Application {
   notes              String?
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
+
+  student          Student          @relation(fields: [studentId], references: [id])
+  opportunity      Opportunity      @relation(fields: [opportunityId], references: [id])
+  applicationCycle ApplicationCycle @relation(fields: [applicationCycleId], references: [id])
+  documents        Document[]
 
   @@unique([studentId, opportunityId, applicationCycleId], name: "application_unique_cycle")
   @@map("applications")
@@ -358,34 +444,43 @@ model Document {
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
+  student     Student      @relation(fields: [studentId], references: [id])
+  application Application? @relation(fields: [applicationId], references: [id])
+
   @@map("documents")
 }
 
+// ─── Notifications & Support ──────────────────────────────────────────────────
+
 model Notification {
-  id                  String    @id @default(uuid())
-  userId              String    @map("user_id")
-  type                String
-  relatedDeadlineId   String?   @map("related_deadline_id")
-  relatedApplicationId String?  @map("related_application_id")
-  channel             String
-  status              String
-  scheduledFor        DateTime? @map("scheduled_for")
-  sentAt              DateTime? @map("sent_at")
-  createdAt           DateTime  @default(now()) @map("created_at")
+  id                   String    @id @default(uuid())
+  userId               String    @map("user_id")
+  type                 String
+  relatedDeadlineId    String?   @map("related_deadline_id")
+  relatedApplicationId String?   @map("related_application_id")
+  channel              String
+  status               String
+  scheduledFor         DateTime? @map("scheduled_for")
+  sentAt               DateTime? @map("sent_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
 
   @@map("notifications")
 }
 
 model HelpRequest {
-  id        String    @id @default(uuid())
-  studentId String    @map("student_id")
-  advisorId String?   @map("advisor_id")
-  category  String
-  status    String    @default("OPEN")
-  subject   String
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id         String    @id @default(uuid())
+  studentId  String    @map("student_id")
+  advisorId  String?   @map("advisor_id")
+  category   String
+  status     String    @default("OPEN")
+  subject    String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
   resolvedAt DateTime? @map("resolved_at")
+
+  student Student @relation(fields: [studentId], references: [id])
 
   @@map("help_requests")
 }
