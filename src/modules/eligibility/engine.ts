@@ -144,24 +144,25 @@ function evaluateGroup(
   snapshot: StudentSnapshot,
 ): { result: ConditionResult; reasons: EvaluationReason[] } {
   const childReasons: EvaluationReason[] = [];
+  const childResults: ConditionResult[] = [];
 
   for (const child of group.conditions) {
     const r = evaluateCondition(child, snapshot);
     childReasons.push(...r.reasons);
+    // For aggregation, use the child's own result (not its individual leaf results)
+    childResults.push(r.result);
   }
-
-  const results = childReasons.map((r) => r.result);
 
   let result: ConditionResult;
   if (group.operator === 'AND') {
-    if (results.includes('FAIL'))    result = 'FAIL';
-    else if (results.includes('UNKNOWN')) result = 'UNKNOWN';
-    else result = 'PASS';
+    if (childResults.includes('FAIL'))         result = 'FAIL';
+    else if (childResults.includes('UNKNOWN')) result = 'UNKNOWN';
+    else                                       result = 'PASS';
   } else {
-    // OR
-    if (results.includes('PASS'))    result = 'PASS';
-    else if (results.includes('UNKNOWN')) result = 'UNKNOWN';
-    else result = 'FAIL';
+    // OR: pass if any child passes
+    if (childResults.includes('PASS'))         result = 'PASS';
+    else if (childResults.includes('UNKNOWN')) result = 'UNKNOWN';
+    else                                       result = 'FAIL';
   }
 
   return { result, reasons: childReasons };

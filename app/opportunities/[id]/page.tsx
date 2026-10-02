@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { db } from '@/src/infrastructure/database';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import ApplyButton from './apply-button';
 
 type Ctx = { params: { id: string } };
 
@@ -244,16 +245,22 @@ export default async function OpportunityDetailPage({ params }: Ctx) {
         {/* ── Sidebar ── */}
         <div className="space-y-4">
           {/* CTA card */}
-          <div className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-5 space-y-3">
             {session && student ? (
               <>
-                <p className="text-sm font-semibold text-brand-900 mb-1">Check your eligibility</p>
-                <p className="text-xs text-brand-700 mb-4">Run the eligibility check to see if you qualify for this opportunity.</p>
-                <EligibilityForm opportunityId={opp.id} />
+                <div>
+                  <p className="text-sm font-semibold text-brand-900 mb-1">Ready to apply?</p>
+                  <p className="text-xs text-brand-700 mb-3">Apply to an open cycle or check your eligibility first.</p>
+                  <ApplyButton opportunityId={opp.id} cycles={cycles} />
+                </div>
+                <div className="border-t border-brand-200 pt-3">
+                  <p className="text-xs text-brand-700 mb-2">Not sure if you qualify?</p>
+                  <EligibilityForm opportunityId={opp.id} />
+                </div>
               </>
             ) : (
               <>
-                <p className="text-sm font-semibold text-slate-900 mb-2">Sign in to check eligibility</p>
+                <p className="text-sm font-semibold text-slate-900 mb-2">Sign in to apply</p>
                 <Link href="/auth/login" className="block w-full rounded-lg bg-brand-700 py-2.5 text-center text-sm font-semibold text-white hover:bg-brand-800 transition-colors">
                   Sign in
                 </Link>
