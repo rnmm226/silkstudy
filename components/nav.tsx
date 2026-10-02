@@ -30,6 +30,12 @@ export default function Nav() {
                 Dashboard
               </Link>
               <Link
+                href="/search"
+                className="text-sm font-medium text-slate-600 hover:text-brand-700 transition-colors"
+              >
+                Search
+              </Link>
+              <Link
                 href="/profile"
                 className="text-sm font-medium text-slate-600 hover:text-brand-700 transition-colors"
               >
@@ -87,6 +93,7 @@ export default function Nav() {
           {status === 'authenticated' ? (
             <>
               <Link href="/dashboard" className="block py-2 text-sm font-medium text-slate-700" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <Link href="/search" className="block py-2 text-sm font-medium text-slate-700" onClick={() => setMenuOpen(false)}>Search</Link>
               <Link href="/profile" className="block py-2 text-sm font-medium text-slate-700" onClick={() => setMenuOpen(false)}>My Profile</Link>
               <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-left py-2 text-sm text-red-600">Sign out</button>
             </>

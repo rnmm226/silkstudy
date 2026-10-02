@@ -29,9 +29,9 @@ async function getStudentSummary(userId: string) {
 
 const quickLinks = [
   { href: '/profile', label: 'Complete your profile', icon: '👤', desc: 'Add academic records, budget and preferences.' },
-  { href: '#', label: 'Search opportunities', icon: '🔍', desc: 'Browse verified programs and scholarships.', soon: true },
+  { href: '/search', label: 'Search opportunities', icon: '🔍', desc: 'Browse verified programs and scholarships.' },
+  { href: '/api/v1/me/matches/recompute', label: 'Compute my matches', icon: '📊', desc: 'Run eligibility + fit scoring on the full catalog.', isPost: true },
   { href: '#', label: 'My applications', icon: '📝', desc: 'Track your applications and deadlines.', soon: true },
-  { href: '#', label: 'Get help', icon: '🤝', desc: 'Connect with an advisor for guidance.', soon: true },
 ];
 
 export default async function DashboardPage() {
