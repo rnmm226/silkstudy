@@ -9,6 +9,8 @@ const navLinks = [
   { href: '/search',        label: 'Search' },
   { href: '/matches',       label: 'Matches' },
   { href: '/applications',  label: 'Applications' },
+  { href: '/help',          label: 'Help' },
+  { href: '/notifications', label: 'Notifications' },
   { href: '/profile',       label: 'Profile' },
 ];
 

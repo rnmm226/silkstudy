@@ -60,7 +60,10 @@ export default function SearchClient() {
   const [type,      setType]      = useState(params.get('type') ?? '');
   const [tuition,   setTuition]   = useState(params.get('tuitionCoverage') ?? '');
   const [living,    setLiving]    = useState(params.get('livingCoverage') ?? '');
-  const [page,      setPage]      = useState(1);
+  const [page, setPage] = useState(() => {
+    const p = parseInt(params.get('page') ?? '1', 10);
+    return isNaN(p) || p < 1 ? 1 : p;
+  });
 
   const [results,  setResults]  = useState<SearchResponse | null>(null);
   const [loading,  setLoading]  = useState(false);

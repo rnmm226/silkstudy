@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@/src/infrastructure/database';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import RecomputeButton from './recompute-button';
 
 export const metadata: Metadata = { title: 'My Matches' };
 
@@ -29,8 +30,9 @@ async function getMatches(studentId: string) {
 
 function ScoreRing({ score }: { score: number }) {
   const color = score >= 75 ? 'text-green-600' : score >= 50 ? 'text-amber-600' : 'text-red-500';
+  const ring  = score >= 75 ? 'border-green-200 bg-green-50' : score >= 50 ? 'border-amber-200 bg-amber-50' : 'border-red-100 bg-red-50';
   return (
-    <div className={`flex flex-col items-center justify-center h-14 w-14 rounded-full border-2 ${score >= 75 ? 'border-green-200 bg-green-50' : score >= 50 ? 'border-amber-200 bg-amber-50' : 'border-red-100 bg-red-50'}`}>
+    <div className={`flex flex-col items-center justify-center h-14 w-14 rounded-full border-2 ${ring}`}>
       <span className={`text-lg font-extrabold leading-none ${color}`}>{score}</span>
       <span className="text-[9px] text-slate-400 uppercase tracking-wide">score</span>
     </div>
@@ -58,7 +60,6 @@ export default async function MatchesPage() {
     where: { userId: session.user.id, deletedAt: null },
     select: { id: true },
   });
-
   if (!student) redirect('/profile');
 
   const matches = await getMatches(student.id);
@@ -78,6 +79,7 @@ export default async function MatchesPage() {
         <RecomputeButton />
       </div>
 
+      {/* Empty state */}
       {matches.length === 0 && (
         <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-card">
           <div className="text-4xl mb-4">📊</div>
@@ -94,28 +96,29 @@ export default async function MatchesPage() {
         </div>
       )}
 
+      {/* Match list */}
       <div className="space-y-4">
         {matches.map((match) => {
-          const opp = match.opportunity;
-          const score = match.fitScore?.totalScore ?? 0;
+          const opp        = match.opportunity;
+          const score      = match.fitScore?.totalScore ?? 0;
           const eligResult = match.eligibilityEvaluation?.result;
-          const components = (match.fitScore?.components ?? []) as Array<{ dimension: string; result: string; contribution: number; details: string }>;
+          const components = (match.fitScore?.components ?? []) as Array<{
+            dimension: string; result: string; contribution: number; details: string;
+          }>;
 
           return (
             <div key={match.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-card hover:border-brand-200 transition-all">
               <div className="flex items-start gap-4">
-                {/* Score ring */}
                 <div className="shrink-0 mt-0.5">
                   <ScoreRing score={Math.round(score)} />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  {/* Rank + eligibility */}
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
                     <span className="text-xs font-bold text-slate-400">#{match.rank || '—'}</span>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       eligResult === 'ELIGIBLE'   ? 'bg-green-100 text-green-800' :
-                      eligResult === 'INELIGIBLE' ? 'bg-red-100 text-red-700' :
+                      eligResult === 'INELIGIBLE' ? 'bg-red-100 text-red-700'    :
                                                     'bg-slate-100 text-slate-600'}`}>
                       {eligResult ?? 'UNKNOWN'}
                     </span>
@@ -133,7 +136,6 @@ export default async function MatchesPage() {
                     </p>
                   )}
 
-                  {/* Coverage tags */}
                   {opp.scholarshipDetail && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       <CoverageTag label="Tuition" value={opp.scholarshipDetail.tuitionCoverageType} />
@@ -148,7 +150,6 @@ export default async function MatchesPage() {
                     </div>
                   )}
 
-                  {/* Score breakdown (top 3 components) */}
                   {components.length > 0 && (
                     <div className="mt-3 space-y-1">
                       {components.slice(0, 3).map((c) => (
@@ -182,19 +183,5 @@ export default async function MatchesPage() {
         })}
       </div>
     </main>
-  );
-}
-
-// Client component for the recompute button
-function RecomputeButton() {
-  return (
-    <form action="/api/v1/me/matches/recompute" method="POST">
-      <button
-        type="submit"
-        className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 transition-colors shrink-0"
-      >
-        ↻ Recompute
-      </button>
-    </form>
   );
 }

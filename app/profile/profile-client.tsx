@@ -83,6 +83,11 @@ export default function ProfileClient({ student, academicRecords, preferences, b
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  function showMsg(setter: (v: { ok: boolean; text: string } | null) => void, msg: { ok: boolean; text: string }) {
+    setter(msg);
+    if (msg.ok) setTimeout(() => setter(null), 3000);
+  }
+
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
     setProfileSaving(true); setProfileMsg(null);
@@ -99,9 +104,7 @@ export default function ProfileClient({ student, academicRecords, preferences, b
       }),
     });
     setProfileSaving(false);
-    setProfileMsg(res.ok
-      ? { ok: true, text: 'Profile saved.' }
-      : { ok: false, text: 'Failed to save. Try again.' });
+    showMsg(setProfileMsg, res.ok ? { ok: true, text: '✓ Profile saved.' } : { ok: false, text: 'Failed to save. Try again.' });
     if (res.ok) router.refresh();
   }
 
@@ -129,7 +132,7 @@ export default function ProfileClient({ student, academicRecords, preferences, b
       }),
     });
     setBudgetSaving(false);
-    setBudgetMsg(res.ok ? { ok: true, text: 'Budget saved.' } : { ok: false, text: 'Check the values and retry.' });
+    showMsg(setBudgetMsg, res.ok ? { ok: true, text: '✓ Budget saved.' } : { ok: false, text: 'Check the values and retry.' });
     if (res.ok) router.refresh();
   }
 
@@ -159,7 +162,7 @@ export default function ProfileClient({ student, academicRecords, preferences, b
       }),
     });
     setPrefsSaving(false);
-    setPrefsMsg(res.ok ? { ok: true, text: 'Preferences saved.' } : { ok: false, text: 'Save failed. Try again.' });
+    showMsg(setPrefsMsg, res.ok ? { ok: true, text: '✓ Preferences saved.' } : { ok: false, text: 'Save failed. Try again.' });
     if (res.ok) router.refresh();
   }
 
@@ -168,6 +171,7 @@ export default function ProfileClient({ student, academicRecords, preferences, b
   const [newRecord, setNewRecord] = useState({ institutionName: '', degreeLevel: '', fieldOfStudy: '', gradeValue: '', gradeScale: '', startDate: '', endDate: '' });
   const [addingRecord, setAddingRecord] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [recordMsg, setRecordMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function addRecord(e: React.FormEvent) {
     e.preventDefault();
@@ -191,12 +195,19 @@ export default function ProfileClient({ student, academicRecords, preferences, b
       setRecords((r) => [data, ...r]);
       setNewRecord({ institutionName: '', degreeLevel: '', fieldOfStudy: '', gradeValue: '', gradeScale: '', startDate: '', endDate: '' });
       setShowAddForm(false);
+      showMsg(setRecordMsg, { ok: true, text: '✓ Record added.' });
+    } else {
+      showMsg(setRecordMsg, { ok: false, text: 'Failed to add record.' });
     }
   }
 
   async function deleteRecord(id: string) {
-    await fetch(`/api/v1/me/academic-records/${id}`, { method: 'DELETE' });
-    setRecords((r) => r.filter((rec) => rec.id !== id));
+    const res = await fetch(`/api/v1/me/academic-records/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setRecords((r) => r.filter((rec) => rec.id !== id));
+    } else {
+      showMsg(setRecordMsg, { ok: false, text: 'Failed to delete record.' });
+    }
   }
 
   if (!student) {
@@ -252,6 +263,9 @@ export default function ProfileClient({ student, academicRecords, preferences, b
 
       {/* ── Academic records ── */}
       <Section title="Academic records">
+        {recordMsg && (
+          <p className={`text-sm ${recordMsg.ok ? 'text-brand-700' : 'text-red-600'}`}>{recordMsg.text}</p>
+        )}
         {records.length > 0 ? (
           <ul className="space-y-3">
             {records.map((r) => (
