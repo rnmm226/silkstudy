@@ -50,6 +50,8 @@ export default withAuth(
           pathname.startsWith('/auth') ||
           pathname.startsWith('/api/auth') ||
           pathname === '/' ||
+          pathname.startsWith('/search') ||
+          pathname.startsWith('/opportunities') ||
           pathname.startsWith('/api/v1/search') ||
           pathname.startsWith('/api/v1/opportunities')
         ) {

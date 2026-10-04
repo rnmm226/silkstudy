@@ -99,8 +99,48 @@ export default function CatalogForm({
       return;
     }
 
-    // 2. TODO: persist ProgramDetail / ScholarshipDetail via dedicated admin endpoints
-    //    For now they are displayed as fields — future sprint will add those API routes.
+    const { data: opp } = await res.json();
+    const oppId = opp.id ?? defaultValues?.id;
+
+    // 2. Persist ProgramDetail if PROGRAM type
+    if (form.type === 'PROGRAM' && oppId && (prog.degreeLevel || prog.fieldOfStudy)) {
+      const langs = prog.languagesOfInstruction
+        .split(',').map((s) => s.trim()).filter(Boolean);
+      await fetch(`/api/v1/admin/opportunities/${oppId}/program-detail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeLevel:            prog.degreeLevel || 'Unspecified',
+          fieldOfStudy:           prog.fieldOfStudy || 'Unspecified',
+          languagesOfInstruction: langs.length > 0 ? langs : ['English'],
+          durationMonths: prog.durationMonths ? Number(prog.durationMonths) : null,
+          studyMode:      prog.studyMode || null,
+        }),
+      });
+    }
+
+    // 3. Persist ScholarshipDetail if SCHOLARSHIP type
+    if (form.type === 'SCHOLARSHIP' && oppId) {
+      await fetch(`/api/v1/admin/opportunities/${oppId}/scholarship-detail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tuitionCoverageType:        schol.tuitionCoverageType,
+          livingCoverageType:         schol.livingCoverageType,
+          accommodationCoverageType:  schol.accommodationCoverageType,
+          transportCoverageType:      schol.transportCoverageType,
+          insuranceCoverageType:      schol.insuranceCoverageType,
+          visaCoverageType:           schol.visaCoverageType,
+          applicationFeeCoverageType: schol.applicationFeeCoverageType,
+          coverageScope:              schol.coverageScope,
+          fundingBody:      schol.fundingBody || null,
+          monthlyStipendAmount:   schol.monthlyStipendAmount ? Number(schol.monthlyStipendAmount) : null,
+          monthlyStipendCurrency: schol.monthlyStipendCurrency || null,
+          renewable: schol.renewable === 'true' ? true : schol.renewable === 'false' ? false : null,
+        }),
+      });
+    }
+
     setLoading(false);
     router.push('/admin/catalog');
     router.refresh();

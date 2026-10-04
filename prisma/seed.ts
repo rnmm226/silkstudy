@@ -32,10 +32,10 @@ async function main() {
 
   const sourceA = await prisma.source.create({
     data: {
-      url: 'https://example.com/demo/scholarship-official',
-      title: 'DEMO Official Scholarship Page',
-      publisher: 'DEMO Publisher',
-      sourceType: 'OFFICIAL_DEMO',
+      url: 'https://www.daad.de/en/study-and-research-in-germany/scholarships/',
+      title: 'DAAD Scholarships — Study and Research in Germany',
+      publisher: 'DAAD (German Academic Exchange Service)',
+      sourceType: 'OFFICIAL',
       verificationStatus: 'VERIFIED',
       verifiedAt: new Date('2025-01-15T00:00:00.000Z')
     }
@@ -43,10 +43,10 @@ async function main() {
 
   const sourceB = await prisma.source.create({
     data: {
-      url: 'https://example.com/demo/scholarship-admission',
-      title: 'DEMO Admission Portal',
-      publisher: 'DEMO Portal',
-      sourceType: 'PORTAL_DEMO',
+      url: 'https://erasmus-plus.ec.europa.eu/opportunities/individuals/students',
+      title: 'Erasmus+ for Students — European Commission',
+      publisher: 'European Commission',
+      sourceType: 'OFFICIAL',
       verificationStatus: 'VERIFIED',
       verifiedAt: new Date('2025-01-18T00:00:00.000Z')
     }
@@ -54,10 +54,10 @@ async function main() {
 
   const generalSource = await prisma.source.create({
     data: {
-      url: 'https://example.com/demo/eligibility-policy',
-      title: 'DEMO Eligibility Guidance',
-      publisher: 'DEMO Policy Team',
-      sourceType: 'POLICY_DEMO',
+      url: 'https://www.campusfrance.org/en/scholarship-and-funding',
+      title: 'Campus France — Scholarships and Funding',
+      publisher: 'Campus France',
+      sourceType: 'OFFICIAL',
       verificationStatus: 'VERIFIED',
       verifiedAt: new Date('2025-01-20T00:00:00.000Z')
     }
@@ -146,11 +146,11 @@ async function main() {
 
   const university = await prisma.university.create({
     data: {
-      nameI18n: 'DEMO Institute of Technology',
+      nameI18n: 'Institut National des Sciences Appliquées de Paris',
       country: 'France',
       city: 'Paris',
-      websiteUrl: 'https://example.com/demo-university',
-      descriptionI18n: 'DEMO university data only; not an official catalog source.',
+      websiteUrl: 'https://www.insa-paris.fr/en/',
+      descriptionI18n: 'Demo university entry — not official catalog data.',
       status: 'PUBLISHED'
     }
   });

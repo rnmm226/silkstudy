@@ -129,6 +129,22 @@ export async function recomputeStudentMatches(studentId: string) {
     select: { id: true },
   });
 
+  // ── Purge stale results before recomputing (idempotent) ───────────────────
+  const existingMatches = await db.matchResult.findMany({
+    where: { studentId },
+    select: { id: true, fitScoreId: true },
+  });
+  if (existingMatches.length > 0) {
+    const matchIds   = existingMatches.map((m) => m.id);
+    const fitScoreIds = existingMatches.map((m) => m.fitScoreId).filter(Boolean) as string[];
+    await db.matchExplanation.deleteMany({ where: { matchResultId: { in: matchIds } } });
+    await db.matchResult.deleteMany({ where: { id: { in: matchIds } } });
+    if (fitScoreIds.length > 0) {
+      await db.fitScore.deleteMany({ where: { id: { in: fitScoreIds } } });
+    }
+  }
+
+  // ── Recompute ─────────────────────────────────────────────────────────────
   const results = [];
   for (const opp of opportunities) {
     try {
@@ -139,12 +155,12 @@ export async function recomputeStudentMatches(studentId: string) {
     }
   }
 
-  // Re-rank: order eligible matches by fit score descending
+  // ── Re-rank by fit score descending, deterministic tie-breaker by opp id ──
   const eligible = await db.matchResult.findMany({
     where: { studentId },
     orderBy: [
       { fitScore: { totalScore: 'desc' } },
-      { generatedAt: 'desc' },
+      { opportunity: { nameI18n: 'asc' } },
     ],
     select: { id: true },
   });
